@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-func EventlogsRoutes() *chi.Mux {
+func EventlogsRoutes(orm *gorm.DB) *chi.Mux {
 	router := chi.NewRouter()
 	router.Get("/", getEvents)
 	return router

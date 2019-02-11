@@ -3,10 +3,11 @@ package routes
 import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
+	"github.com/jinzhu/gorm"
 	"net/http"
 )
 
-func PrinterRoutes() *chi.Mux {
+func PrinterRoutes(orm *gorm.DB) *chi.Mux {
 	router := chi.NewRouter()
 	router.Get("/", getPrinter)
 	return router
