@@ -5,6 +5,7 @@ type User struct {
 	UserPin    string     `json:"userId" gorm:"column:User_PIN"`
 	Name       string     `json:"name" gorm:"column:Name"`
 	Biometric  []Template `gorm:"foreignkey:UserId;association_foreignkey:InternalId" json:"biometric"`
+	//Events  []Event `gorm:"foreignkey:UserId;association_foreignkey:UserPin" json:"events"`
 }
 
 func (User) TableName() string {

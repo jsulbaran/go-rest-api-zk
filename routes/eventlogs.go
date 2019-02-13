@@ -1,31 +1,49 @@
 package routes
 
 import (
-	"RestService/domain"
+	"RestService/service"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"net/http"
+	"time"
 )
+
+var eventService *service.EventService
 
 func EventlogsRoutes(orm *gorm.DB) *chi.Mux {
 	router := chi.NewRouter()
-	router.Get("/", getEvents)
+	eventService = service.NewEventService(orm)
+	router.Get("/byDate", getEvents)
+	//router.Get("/date/from={fromDate}&to={toDate}", getEvents)
 	return router
 }
 
 func getEvents(writer http.ResponseWriter, request *http.Request) {
-	db, _ := gorm.Open("sqlite3", "/home/joe/go/src/data/ZKDB.db")
-	defer db.Close()
+	fromDate := request.URL.Query().Get("fromDate")
+	if len(fromDate) < 1 {
+		// bad reqquest no esta la fecha fromDate
+		render.Status(request, http.StatusBadRequest)
+		render.Render(writer, request, ErrInvalidRequest("No se indica parametro fromDate"))
+		return
+	}
+	dateFrom, err := time.Parse("20060102150405", fromDate)
+	if err != nil {
+		render.Render(writer, request, ErrInvalidRequest("Parametro fromDate en formato invalido"))
+		return
+	}
 
-	var events []domain.Event
-	//var event domain.Event
-	db.Find(&events)
-	//db.First(&event, 19)
-
-	//response := make(map[string]string)
-	//response["status"] = "OK"
-	//response["id"] = event.UserId
+	toDate := request.URL.Query().Get("toDate")
+	var dateTo = time.Now()
+	if len(toDate) > 0 {
+		t2, err2 := time.Parse("20060102150405", toDate)
+		if err != err2 {
+			render.Render(writer, request, ErrInvalidRequest("Parametro toDate en formato invalido"))
+			return
+		}
+		dateTo = t2
+	}
+	var events = eventService.GetEvents(dateFrom, dateTo)
 	render.JSON(writer, request, events)
 }
