@@ -1,12 +1,13 @@
 package routes
 
 import (
+	"RestService/config"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
 	"net/http"
 )
 
-func ConfigRoutes() *chi.Mux {
+func ConfigRoutes(configuration *config.Config) *chi.Mux {
 	router := chi.NewRouter()
 	router.Get("/", getConfig)
 	return router

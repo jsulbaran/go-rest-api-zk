@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"RestService/config"
 	"RestService/service"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
@@ -12,11 +13,10 @@ import (
 
 var eventService *service.EventService
 
-func EventlogsRoutes(orm *gorm.DB) *chi.Mux {
+func EventlogsRoutes(orm *gorm.DB, configuration *config.Config) *chi.Mux {
 	router := chi.NewRouter()
-	eventService = service.NewEventService(orm)
+	eventService = service.NewEventService(orm, configuration)
 	router.Get("/byDate", getEvents)
-	//router.Get("/date/from={fromDate}&to={toDate}", getEvents)
 	return router
 }
 
