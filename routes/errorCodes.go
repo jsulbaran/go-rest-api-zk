@@ -23,3 +23,9 @@ func ErrInvalidRequest(errorDesc string) render.Renderer {
 		StatusText:     errorDesc,
 	}
 }
+func ErrNotFound(errorDesc string) render.Renderer {
+	return &ErrResponse{
+		HTTPStatusCode: 404,
+		StatusText:     errorDesc,
+	}
+}

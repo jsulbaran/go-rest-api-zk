@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func ConfigRoutes(configuration *config.Config) *chi.Mux {
+func ConfigRoutes(configuration config.Config) *chi.Mux {
 	router := chi.NewRouter()
 	router.Get("/", getConfig)
 	return router

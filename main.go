@@ -8,11 +8,12 @@ import (
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/render"
 	"github.com/jinzhu/gorm"
+	"github.com/tkanos/gonfig"
 	"log"
 	"net/http"
 )
 
-func Routes(db *gorm.DB, config *config.Config) *chi.Mux {
+func Routes(db *gorm.DB, config config.Config) *chi.Mux {
 	router := chi.NewRouter()
 	router.Use(render.SetContentType(render.ContentTypeJSON), middleware.Logger, middleware.DefaultCompress, middleware.RedirectSlashes, middleware.Recoverer)
 	router.Route("/api/v1", func(r chi.Router) {
@@ -26,7 +27,14 @@ func Routes(db *gorm.DB, config *config.Config) *chi.Mux {
 
 func main() {
 
-	configuration := config.NewConfig()
+	//configuration := config.NewConfig()
+	var configuration config.Config
+
+	err := gonfig.GetConf("configrest.json", &configuration)
+	if err != nil {
+		panic(err)
+	}
+
 	db, error2 := config.ConnectDatabase(configuration)
 	configuration.DeviceSerial = service.GetDeviceSerial(configuration.SystemDatabasePath)
 	if error2 != nil {

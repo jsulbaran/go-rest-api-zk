@@ -1,0 +1,5 @@
+{
+  "DatabasePath": "../data/ZKDB.db",
+  "SystemDatabasePath": "ZKSystem.db",
+  "Port": "8000"
+}

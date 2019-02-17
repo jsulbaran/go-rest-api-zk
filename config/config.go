@@ -18,6 +18,6 @@ func NewConfig() *Config {
 		Port:               "8000",
 	}
 }
-func ConnectDatabase(config *Config) (*gorm.DB, error) {
+func ConnectDatabase(config Config) (*gorm.DB, error) {
 	return gorm.Open("sqlite3", config.DatabasePath)
 }

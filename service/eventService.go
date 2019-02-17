@@ -10,10 +10,10 @@ import (
 
 type EventService struct {
 	db            *gorm.DB
-	configuration *config.Config
+	configuration config.Config
 }
 
-func NewEventService(orm *gorm.DB, configuration *config.Config) *EventService {
+func NewEventService(orm *gorm.DB, configuration config.Config) *EventService {
 	return &EventService{db: orm, configuration: configuration}
 }
 

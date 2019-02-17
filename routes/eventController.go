@@ -13,7 +13,7 @@ import (
 
 var eventService *service.EventService
 
-func EventlogsRoutes(orm *gorm.DB, configuration *config.Config) *chi.Mux {
+func EventlogsRoutes(orm *gorm.DB, configuration config.Config) *chi.Mux {
 	router := chi.NewRouter()
 	eventService = service.NewEventService(orm, configuration)
 	router.Get("/byDate", getEvents)
@@ -45,5 +45,9 @@ func getEvents(writer http.ResponseWriter, request *http.Request) {
 		dateTo = t2
 	}
 	var events = eventService.GetEvents(dateFrom, dateTo)
+	if len(events) < 1 {
+		render.Render(writer, request, ErrNotFound("No se hallaron eventos"))
+		return
+	}
 	render.JSON(writer, request, events)
 }
