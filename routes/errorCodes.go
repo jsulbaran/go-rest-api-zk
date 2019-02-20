@@ -19,7 +19,7 @@ func (e *ErrResponse) Render(w http.ResponseWriter, r *http.Request) error {
 }
 func ErrInvalidRequest(errorDesc string) render.Renderer {
 	return &ErrResponse{
-		HTTPStatusCode: 400,
+		HTTPStatusCode: http.StatusBadRequest,
 		StatusText:     errorDesc,
 	}
 }
