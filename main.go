@@ -15,7 +15,7 @@ import (
 
 func Routes(db *gorm.DB, config config.Config) *chi.Mux {
 	router := chi.NewRouter()
-	router.Use(render.SetContentType(render.ContentTypeJSON), middleware.Logger, middleware.DefaultCompress, middleware.RedirectSlashes, middleware.Recoverer)
+	router.Use(render.SetContentType(render.ContentTypeJSON), middleware.Logger, middleware.DefaultCompress, middleware.RedirectSlashes, middleware.Recoverer, middleware.AllowContentType("application/json"))
 	router.Route("/api/v1", func(r chi.Router) {
 		r.Mount("/users", routes.UserRoutes(db))                  // gestión de usuarios
 		r.Mount("/config", routes.ConfigRoutes(config))           // configuración

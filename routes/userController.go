@@ -54,7 +54,7 @@ func getUserByPin(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 	user := userService.GetUserByPin(id)
-	if user.InternalId == 0 {
+	if user.InternalId < 1 {
 		render.Render(writer, request, ErrNotFound("No existe el usuario"))
 		return
 	}
@@ -71,29 +71,64 @@ func getUsers(writer http.ResponseWriter, request *http.Request) {
 	render.JSON(writer, request, users)
 }
 
+/**
+Agrega un usuario al sistema.
+*/
 func postUsers(writer http.ResponseWriter, request *http.Request) {
-	var users = userService.GetUsersWithTemplates()
-	//var templates domain.Template
-	//db.First(&users, 5).Model(&users).Related(&templates)
-	//db.Preload("Biometric").Find(&users, 5)
-	//db.First(&users, 5).Model(&users).Related(&templates)
-	//query := db.Debug().Model(&users).Related(&templates).Error
-	//query1 := db.Debug().Find(&users, 5)
-	//query := db.Debug().Model(&users).Related(&templates).Error
-	//if query1 != nil {
-	//	panic(query1)
-	//}
-	//if query != nil {
-	//	panic(query)
-	//}
-	render.JSON(writer, request, users)
-
+	var userPosted domain.User
+	err := render.DecodeJSON(request.Body, &userPosted)
+	if err != nil || !userService.IsValidUser(userPosted) {
+		render.Render(writer, request, ErrInvalidRequest("No se indica campos validos para crear el usuario"))
+		return
+	}
+	user := userService.CreateNewUser(userPosted)
+	if user.InternalId < 0 {
+		render.Render(writer, request, ErrInvalidRequest(user.ErrorString))
+		return
+	}
+	render.JSON(writer, request, user)
 }
-func putUser(writer http.ResponseWriter, request *http.Request) {
 
+/**
+Actualiza un usario dado el {id} interno.
+*/
+func putUser(writer http.ResponseWriter, request *http.Request) {
+	id := chi.URLParam(request, "id")
+	if !util.IsNumeric(id) {
+		render.Render(writer, request, ErrInvalidRequest("No se indica un id valido"))
+		return
+	}
+	var userPosted domain.User
+	err := render.DecodeJSON(request.Body, &userPosted)
+	if err != nil || !userService.IsValidUser(userPosted) {
+		render.Render(writer, request, ErrInvalidRequest("No se indica campos validos para actualizar el usuario"))
+		return
+	}
+
+	idNum := util.StringToInt(id)
+	user := userService.GetUserById(idNum)
+	if user.InternalId < 1 {
+		render.Render(writer, request, ErrNotFound("No existe el usuario solicitado"))
+		return
+	}
+	modifiedUser := userService.UpdateUserById(idNum, userPosted)
+	render.JSON(writer, request, modifiedUser)
 }
 func deleteUser(writer http.ResponseWriter, request *http.Request) {
+	id := chi.URLParam(request, "id")
+	if !util.IsNumeric(id) {
+		render.Render(writer, request, ErrInvalidRequest("No se indica un id valido"))
+		return
+	}
+	idNum := util.StringToInt(id)
+	user := userService.GetUserById(idNum)
+	if user.InternalId < 1 {
+		render.Render(writer, request, ErrNotFound("No existe el usuario"))
+		return
+	}
 
+	result := userService.DeleteUserAndTemplateById(idNum)
+	render.JSON(writer, request, result)
 }
 
 func getTemplates(writer http.ResponseWriter, request *http.Request) {
