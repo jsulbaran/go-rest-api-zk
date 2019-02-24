@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/jinzhu/gorm"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 type Config struct {
@@ -9,6 +10,9 @@ type Config struct {
 	SystemDatabasePath string
 	Port               string
 	DeviceSerial       string
+	EnableLog          bool
+	Logfile            string
+	MaxLogDays         int
 }
 
 func NewConfig() *Config {

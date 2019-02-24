@@ -13,7 +13,7 @@ type UserService struct {
 	db *gorm.DB
 }
 
-const ADMIN_ROLE_CODE = 120
+const ADMIN_ROLE_CODE = 14
 const USER_ROLE_CODE = 0
 const USER_ROLE_STRING = "user"
 const ADMIN_ROLE_STRING = "admin"
@@ -26,7 +26,7 @@ func (service UserService) GetUsersWithTemplates() []domain.User {
 	var users []domain.User
 	service.db.Debug().Preload("Biometric").Find(&users)
 	//service.db.Preload("Biometric").Find(&users)
-	return users
+	return completeUsersData(users)
 }
 func (service UserService) GetUsers() []domain.User {
 	var users []domain.User
@@ -60,6 +60,7 @@ func (service UserService) DeleteUserAndTemplateById(id int) bool {
 	//delete templates
 	service.deleteTemplateByUserId(id)
 	service.db.Delete(&user)
+	util.ResetFingerprintReader()
 	return true
 }
 
@@ -86,13 +87,22 @@ func completeUserData(user domain.User) domain.User {
 	user.Rut = rutStr + "-" + string(digit)
 	return user
 }
+
+func completeUsersData(users []domain.User) (resultUsers []domain.User) {
+	for _, user := range users {
+		resultUsers = append(resultUsers, completeUserData(user))
+	}
+	return
+}
 func (service UserService) deleteTemplateByUserId(id int) {
 	service.db.Where("pin = ?", id).Delete(domain.Template{})
 
 }
 
 func (service UserService) IsValidUser(user domain.User) bool {
-
+	if user.UserPin == "" {
+		return false
+	}
 	return true
 }
 
@@ -111,10 +121,10 @@ func (service UserService) UpdateUserById(userId int, user domain.User) domain.U
 	//service.db.Where("pin = ?", userId).First(domain.Template{})
 	//
 	service.db.Where("pin = ?", userId).Delete(domain.Template{})
-
+	resetFingerprint := false
 	if len(user.Biometric) >= 1 {
 		dbUser.Biometric = []domain.Template{{Valid: 1, FingerID: 1, Size: len(user.Biometric[0].Data), Data: user.Biometric[0].Data, ModifyTime: modifiedTime}}
-
+		resetFingerprint = true
 		//	templateId := 0
 		//	var template domain.Template
 		//	service.db.Where("pin = ?", userId).First(&template)
@@ -127,6 +137,9 @@ func (service UserService) UpdateUserById(userId int, user domain.User) domain.U
 	}
 	dbUser.Card = user.Card
 	service.db.Debug().Preload("Biometric").Save(dbUser)
+	if resetFingerprint {
+		util.ResetFingerprintReader()
+	}
 	return dbUser
 }
 
@@ -139,8 +152,12 @@ func (service UserService) CreateNewUser(user domain.User) domain.User {
 	dbUser.RoleNumber = getRoleCodeFromString(user.RoleString)
 	modifiedTime := time.Now().Format("20060102150405")
 	dbUser.ModifyTime = modifiedTime
+	resetFingerprint := false
+
 	if len(user.Biometric) >= 1 {
 		dbUser.Biometric = []domain.Template{{Valid: 1, FingerID: 1, Size: len(user.Biometric[0].Data), Data: user.Biometric[0].Data, ModifyTime: modifiedTime}}
+		resetFingerprint = true
+
 	}
 	dbUser.Card = user.Card
 	service.db.NewRecord(dbUser) // => returns `true` as primary key is blank
@@ -149,6 +166,9 @@ func (service UserService) CreateNewUser(user domain.User) domain.User {
 		return domain.User{InternalId: -1, ErrorString: err.Error()}
 	}
 	//service.db.Debug().Preload("Biometric").Save(dbUser)
+	if resetFingerprint {
+		util.ResetFingerprintReader()
+	}
 
 	return completeUserData(dbUser)
 }

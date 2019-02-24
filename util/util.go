@@ -1,6 +1,9 @@
 package util
 
-import "strconv"
+import (
+	"github.com/SkyrisBactera/pkill"
+	"strconv"
+)
 
 func StringToInt(s string) int {
 	i, err := strconv.Atoi(s)
@@ -25,4 +28,8 @@ func CalcularDigitoRut(rut int) rune {
 	}
 	return rune(75)
 
+}
+
+func ResetFingerprintReader() {
+	pkill.Pkill("biometric")
 }
