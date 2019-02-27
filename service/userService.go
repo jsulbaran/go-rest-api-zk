@@ -114,7 +114,7 @@ func (service UserService) UpdateUserById(userId int, user domain.User) domain.U
 	dbUser.Name = user.Name
 	dbUser.CompanyId = user.CompanyId
 	dbUser.RoleString = user.RoleString
-
+	dbUser.RoleNumber = getRoleCodeFromString(user.RoleString)
 	modifiedTime := time.Now().Format("20060102150405")
 	dbUser.ModifyTime = modifiedTime
 
